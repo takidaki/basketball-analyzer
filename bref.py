@@ -312,7 +312,7 @@ elif st.session_state.current_view == 'player_gamelog':
             
             # Remove unnamed columns and drop specific ones if they exist
             game_log = game_log.loc[:, ~game_log.columns.str.contains('Unnamed:', case=False)]
-            columns_to_exclude = ['GmSc', '+/-', 'Date', 'Tm', 'Age']
+            columns_to_exclude = ['GmSc', '+/-', 'Date', 'Tm', 'Age', 'Rk']
             game_log = game_log.drop(columns=columns_to_exclude, errors='ignore')
             
             # Identify and drop columns that contain the string "none" (case-insensitive)

@@ -403,14 +403,10 @@ elif st.session_state.current_view == 'player_gamelog':
                         avg_trb = filtered_game_log['TRB'].mean()
                         st.markdown(f"**Avg Assists**: {avg_ast:.1f} | **Avg Rebounds**: {avg_trb:.1f}")
             
-            tab1, tab2, tab3 = st.tabs(["Game Log", "Analysis", "Visualization"])
+            tab1, tab2, tab3 = st.tabs(["Analysis", "Game Log", "Visualization"])
 
             with tab1:
-                st.subheader("Game Log Data")
-                st.dataframe(filtered_game_log, use_container_width=True)
-
-            with tab2:
-                st.markdown('<h2 class="subheader">Analysis Section</h2>', unsafe_allow_html=True)
+                st.subheader("Analysis Section")
                 
                 # Create two columns for better layout
                 col1, col2 = st.columns([1, 1])
@@ -455,27 +451,31 @@ elif st.session_state.current_view == 'player_gamelog':
                     except Exception as e:
                         st.error(f"Could not calculate statistics for {stat_column}: {e}")
 
-                with tab3:
-                    st.subheader("Visualization Section")
-                    # Line chart for selected stat over time
-                    if stat_column:
-                        fig = px.line(modified_game_log, x=modified_game_log.index, y=stat_column, 
-                                     title=f"{stat_column} Over Time")
-                        fig.update_layout(height=400)
-                        st.plotly_chart(fig, use_container_width=True, key=f"line_chart_viz_{stat_column}")
+            with tab2:
+                st.subheader("Game Log Data")
+                st.dataframe(filtered_game_log, use_container_width=True)
 
-                    # Bar chart comparing multiple stats
-                    stats_to_compare = st.multiselect(
-                        "Select stats to compare:", 
-                        numeric_columns,
-                        default=['PTS', 'AST', 'TRB'] if all(stat in numeric_columns for stat in ['PTS', 'AST', 'TRB']) else [],
-                        key="stats_to_compare_viz"
-                    )
-                    
-                    if stats_to_compare:
-                        avg_stats = modified_game_log[stats_to_compare].mean()
-                        fig = px.bar(avg_stats, title="Average Stats Comparison")
-                        st.plotly_chart(fig, use_container_width=True, key="bar_chart_viz")
+            with tab3:
+                st.subheader("Visualization Section")
+                # Line chart for selected stat over time
+                if stat_column:
+                    fig = px.line(modified_game_log, x=modified_game_log.index, y=stat_column, 
+                                 title=f"{stat_column} Over Time")
+                    fig.update_layout(height=400)
+                    st.plotly_chart(fig, use_container_width=True, key=f"line_chart_viz_{stat_column}")
+
+                # Bar chart comparing multiple stats
+                stats_to_compare = st.multiselect(
+                    "Select stats to compare:", 
+                    numeric_columns,
+                    default=['PTS'],
+                    key="stats_to_compare_viz"
+                )
+                
+                if stats_to_compare:
+                    avg_stats = modified_game_log[stats_to_compare].mean()
+                    fig = px.bar(avg_stats, title="Average Stats Comparison")
+                    st.plotly_chart(fig, use_container_width=True, key="bar_chart_viz")
         else:
             st.error(f"Failed to retrieve player data. HTTP Status Code: {response.status_code}")
     except Exception as e:

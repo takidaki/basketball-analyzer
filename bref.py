@@ -332,6 +332,13 @@ elif st.session_state.current_view == 'player_gamelog':
                 # Convert to numeric; non-convertible values will become NaN
                 game_log[col] = pd.to_numeric(cleaned, errors='coerce')
             
+            # Clean 'MP' column separately
+            if 'MP' in game_log.columns:
+                game_log['MP'] = game_log['MP'].astype(str).str.replace('Inactive', '', regex=False)  # Remove 'Inactive'
+                game_log['MP'] = game_log['MP'].str.replace('Did Not Dress', '', regex=False)  # Remove 'Did Not Dress'
+                game_log['MP'] = game_log['MP'].str.replace(':', '', regex=False)  # Remove colons if present
+                game_log['MP'] = pd.to_numeric(game_log['MP'], errors='coerce')  # Convert to numeric
+            
             # Add opponent filter in sidebar
             with st.sidebar:
                 if 'Opp' in game_log.columns:
@@ -405,7 +412,7 @@ elif st.session_state.current_view == 'player_gamelog':
 
                     if 'MP' in filtered_game_log.columns:
                         avg_mp = filtered_game_log['MP'].mean()  # Calculate average minutes played
-                        st.markdown(f"**Avg Minutes Played**: {avg_mp:.1f}")  # Display average minutes playe
+                        st.markdown(f"**Avg Minutes Played**: {avg_mp:.1f}")  # Display average minutes played
             
             tab1, tab2, tab3 = st.tabs(["Analysis", "Game Log", "Visualization"])
 
@@ -424,7 +431,6 @@ elif st.session_state.current_view == 'player_gamelog':
                     # Dropdown for statistical analysis on numeric columns
                     numeric_columns = filtered_game_log.select_dtypes(include=['float64', 'int64']).columns
                     stat_column = st.selectbox("Select a column for statistical analysis:", numeric_columns, key="stat_column", index=numeric_columns.get_loc('PTS') if 'PTS' in numeric_columns else 0)
-                
                 
                 # Remove the selected columns from the DataFrame
                 modified_game_log = filtered_game_log.drop(columns=exclude_columns) if exclude_columns else filtered_game_log
@@ -456,31 +462,27 @@ elif st.session_state.current_view == 'player_gamelog':
                     except Exception as e:
                         st.error(f"Could not calculate statistics for {stat_column}: {e}")
 
-            with tab2:
-                st.subheader("Game Log Data")
-                st.dataframe(filtered_game_log, use_container_width=True)
+                with tab3:
+                    st.subheader("Visualization Section")
+                    # Line chart for selected stat over time
+                    if stat_column:
+                        fig = px.line(modified_game_log, x=modified_game_log.index, y=stat_column, 
+                                     title=f"{stat_column} Over Time")
+                        fig.update_layout(height=400)
+                        st.plotly_chart(fig, use_container_width=True, key=f"line_chart_viz_{stat_column}")
 
-            with tab3:
-                st.subheader("Visualization Section")
-                # Line chart for selected stat over time
-                if stat_column:
-                    fig = px.line(modified_game_log, x=modified_game_log.index, y=stat_column, 
-                                 title=f"{stat_column} Over Time")
-                    fig.update_layout(height=400)
-                    st.plotly_chart(fig, use_container_width=True, key=f"line_chart_viz_{stat_column}")
-
-                # Bar chart comparing multiple stats
-                stats_to_compare = st.multiselect(
-                    "Select stats to compare:", 
-                    numeric_columns,
-                    default=['PTS'],
-                    key="stats_to_compare_viz"
-                )
-                
-                if stats_to_compare:
-                    avg_stats = modified_game_log[stats_to_compare].mean()
-                    fig = px.bar(avg_stats, title="Average Stats Comparison")
-                    st.plotly_chart(fig, use_container_width=True, key="bar_chart_viz")
+                    # Bar chart comparing multiple stats
+                    stats_to_compare = st.multiselect(
+                        "Select stats to compare:", 
+                        numeric_columns,
+                        default=['PTS', 'AST', 'TRB'] if all(stat in numeric_columns for stat in ['PTS', 'AST', 'TRB']) else [],
+                        key="stats_to_compare_viz"
+                    )
+                    
+                    if stats_to_compare:
+                        avg_stats = modified_game_log[stats_to_compare].mean()
+                        fig = px.bar(avg_stats, title="Average Stats Comparison")
+                        st.plotly_chart(fig, use_container_width=True, key="bar_chart_viz")
         else:
             st.error(f"Failed to retrieve player data. HTTP Status Code: {response.status_code}")
     except Exception as e:

@@ -332,13 +332,6 @@ elif st.session_state.current_view == 'player_gamelog':
                 # Convert to numeric; non-convertible values will become NaN
                 game_log[col] = pd.to_numeric(cleaned, errors='coerce')
             
-            # Clean 'MP' column separately
-            if 'MP' in game_log.columns:
-                game_log['MP'] = game_log['MP'].astype(str).str.replace('Inactive', '', regex=False)  # Remove 'Inactive'
-                game_log['MP'] = game_log['MP'].str.replace('Did Not Dress', '', regex=False)  # Remove 'Did Not Dress'
-                game_log['MP'] = game_log['MP'].str.replace(':', '', regex=False)  # Remove colons if present
-                game_log['MP'] = pd.to_numeric(game_log['MP'], errors='coerce')  # Convert to numeric
-            
             # Add opponent filter in sidebar
             with st.sidebar:
                 if 'Opp' in game_log.columns:
@@ -409,10 +402,6 @@ elif st.session_state.current_view == 'player_gamelog':
                         avg_ast = filtered_game_log['AST'].mean()
                         avg_trb = filtered_game_log['TRB'].mean()
                         st.markdown(f"**Avg Assists**: {avg_ast:.1f} | **Avg Rebounds**: {avg_trb:.1f}")
-
-                    if 'MP' in filtered_game_log.columns:
-                        avg_mp = filtered_game_log['MP'].mean()  # Calculate average minutes played
-                        st.markdown(f"**Avg Minutes Played**: {avg_mp:.1f}")  # Display average minutes played
             
             tab1, tab2, tab3 = st.tabs(["Analysis", "Game Log", "Visualization"])
 

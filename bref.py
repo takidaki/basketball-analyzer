@@ -402,6 +402,10 @@ elif st.session_state.current_view == 'player_gamelog':
                         avg_ast = filtered_game_log['AST'].mean()
                         avg_trb = filtered_game_log['TRB'].mean()
                         st.markdown(f"**Avg Assists**: {avg_ast:.1f} | **Avg Rebounds**: {avg_trb:.1f}")
+
+                    if 'MP' in filtered_game_log.columns:
+                        avg_mp = filtered_game_log['MP'].mean()  # Calculate average minutes played
+                        st.markdown(f"**Avg Minutes Played**: {avg_mp:.1f}")  # Display average minutes playe
             
             tab1, tab2, tab3 = st.tabs(["Analysis", "Game Log", "Visualization"])
 

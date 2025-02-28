@@ -451,6 +451,15 @@ elif st.session_state.current_view == 'player_gamelog':
                     except Exception as e:
                         st.error(f"Could not calculate statistics for {stat_column}: {e}")
 
+                with tab2:
+                st.subheader("Game Log")
+                # Display the filtered game log DataFrame
+                if not filtered_game_log.empty:
+                    st.dataframe(filtered_game_log, use_container_width=True)
+                else:
+                    st.warning("No game log data available.")
+
+
                 with tab3:
                     st.subheader("Visualization Section")
                     # Line chart for selected stat over time

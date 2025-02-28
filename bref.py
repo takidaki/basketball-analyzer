@@ -419,7 +419,8 @@ elif st.session_state.current_view == 'player_gamelog':
                 with col2:
                     # Dropdown for statistical analysis on numeric columns
                     numeric_columns = filtered_game_log.select_dtypes(include=['float64', 'int64']).columns
-                    stat_column = st.selectbox("Select a column for statistical analysis:", numeric_columns, key="stat_column")
+                    stat_column = st.selectbox("Select a column for statistical analysis:", numeric_columns, key="stat_column", index=numeric_columns.get_loc('PTS') if 'PTS' in numeric_columns else 0)
+                
                 
                 # Remove the selected columns from the DataFrame
                 modified_game_log = filtered_game_log.drop(columns=exclude_columns) if exclude_columns else filtered_game_log
